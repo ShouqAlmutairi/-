@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ScamShieldAI.Data;
 using ScamShieldAI.Models;
 
@@ -8,7 +13,7 @@ namespace ScamShieldAI.Services
     {
         private readonly AppDbContext _context;
 
-        // نطاقات معروفة بتقصير الروابط - وجودها لا يعني احتيال 100% لكنه مؤشر يرفع الشك
+        // نطاقات معروفة بتقصير الروابط
         private static readonly string[] ShortenerDomains =
         {
             "bit.ly", "tinyurl.com", "goo.gl", "t.co", "is.gd", "ow.ly", "cutt.us", "shorturl.at"
@@ -27,18 +32,19 @@ namespace ScamShieldAI.Services
             _context = context;
         }
 
-        public AnalysisResultViewModel Analyze(string message)
+        public async Task<AnalysisResultViewModel> AnalyzeAsync(string message)
         {
             var result = new AnalysisResultViewModel
             {
-                OriginalMessage = message
+                OriginalMessage = message,
+                UrlChecks = new List<UrlCheckInfo>()
             };
 
             int score = 0;
             var reasons = new List<string>();
 
-            // 1) فحص الكلمات المفتاحية من قاعدة البيانات
-            var keywordRules = _context.Keywords.ToList();
+            // 1) فحص الكلمات المفتاحية من قاعدة البيانات بشكل غير متزامن
+            var keywordRules = await _context.Keywords.ToListAsync();
             foreach (var rule in keywordRules)
             {
                 if (message.Contains(rule.Keyword, StringComparison.OrdinalIgnoreCase))
@@ -48,13 +54,13 @@ namespace ScamShieldAI.Services
                 }
             }
 
-            // 2) استخراج الروابط
+            // 2) استخراج الروابط وفحصها
             var urls = UrlRegex.Matches(message).Select(m => m.Value.TrimEnd('.', ',', ')')).Distinct().ToList();
             result.ExtractedUrls = urls;
 
             if (urls.Any())
             {
-                score += 30; // وجود رابط بحد ذاته مؤشر خطورة (حسب جدول النقاط في التصميم)
+                score += 30; 
                 reasons.Add("وجود رابط داخل الرسالة");
 
                 foreach (var url in urls)
@@ -121,8 +127,8 @@ namespace ScamShieldAI.Services
                 Date = DateTime.Now
             };
 
-            _context.Messages.Add(record);
-            _context.SaveChanges();
+            await _context.Messages.AddAsync(record);
+            await _context.SaveChangesAsync();
 
             return result;
         }
@@ -131,8 +137,6 @@ namespace ScamShieldAI.Services
         {
             bool isHttps = url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
             bool isShortener = ShortenerDomains.Any(d => url.Contains(d, StringComparison.OrdinalIgnoreCase));
-
-            // مؤشر بسيط: نطاقات كثيرة الشرطات/الأرقام تُعتبر مشبوهة أكثر (heuristic بسيط وليس قاطع)
             bool looksSuspicious = Regex.IsMatch(url, @"\d{3,}") || url.Count(c => c == '-') >= 3;
 
             return new UrlCheckInfo

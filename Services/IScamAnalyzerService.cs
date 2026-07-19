@@ -1,9 +1,10 @@
+using System.Threading.Tasks;
 using ScamShieldAI.Models;
 
 namespace ScamShieldAI.Services
 {
     public interface IScamAnalyzerService
     {
-        AnalysisResultViewModel Analyze(string message);
+        Task<AnalysisResultViewModel> AnalyzeAsync(string message);
     }
 }
