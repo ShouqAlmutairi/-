@@ -1,56 +1,70 @@
-# ScamShield AI
+# Munqidh (منقذك)
 
-منصة لاكتشاف الاحتيال الرقمي والتصيد الإلكتروني باللغة العربية.
-Backend: ASP.NET Core MVC (.NET 8) + Entity Framework Core (SQLite)
-Frontend: Bootstrap 5 (RTL)
+## Overview
 
-## طريقة التشغيل في Visual Studio
+Munqidh is an AI-powered cybersecurity platform designed to help users identify fraudulent messages and potential scam attempts. The platform analyzes message content and provides instant feedback to protect users from phishing and social engineering attacks.
 
-1. افتحي **Visual Studio 2022** (تأكدي من تثبيت workload: **ASP.NET and web development**).
-2. من القائمة: `File > Open > Project/Solution` واختاري ملف `ScamShieldAI.csproj`.
-3. عند أول فتح، Visual Studio سيسترجع الحزم (Packages) تلقائيًا (NuGet Restore).
-   - إذا ما استرجعت تلقائيًا: كليك يمين على المشروع > Restore NuGet Packages.
-4. اضغطي F5 أو زر التشغيل (▶) لتشغيل المشروع.
-5. سيفتح المتصفح تلقائيًا على الصفحة الرئيسية.
+## Problem Statement
 
-قاعدة البيانات (SQLite ملف `scamshield.db`) تُنشأ تلقائيًا أول مرة تشغّلين فيها المشروع،
-وتُعبّأ بالكلمات المفتاحية الأساسية تلقائيًا (لا تحتاجين أي إعداد يدوي).
+Scam messages and online fraud are becoming increasingly common. Many users find it difficult to distinguish between legitimate and fraudulent communications, leading to financial and personal risks.
 
-## هيكل المشروع
+## Solution
 
-```
-ScamShieldAI/
-├── Controllers/       -> Home, Analyze, Dashboard
-├── Models/             -> AnalyzedMessage (Messages), KeywordRule (Keywords), AppUser (Users)
-├── Data/               -> AppDbContext + DbSeeder (تعبئة الكلمات المفتاحية)
-├── Services/           -> ScamAnalyzerService (محرك التحليل Rule-Based)
-├── Views/              -> صفحات Home / Analyze / Result / History / Dashboard
-└── wwwroot/            -> CSS
-```
+Munqidh uses Artificial Intelligence to analyze suspicious messages and classify them as either Safe or Scam. The platform aims to increase cybersecurity awareness and help users make safer decisions online.
 
-## كيف يعمل التحليل حاليًا (Level 1 - Rule Based)
+## Features
 
-- يقارن نص الرسالة بجدول الكلمات المفتاحية (`Keywords`) وكل كلمة لها وزن (Weight) محدد مسبقًا.
-- يستخرج الروابط (URLs) وعناوين IP من النص (IOC Detection) باستخدام Regex.
-- يفحص كل رابط: هل يستخدم HTTPS؟ هل هو رابط اختصار (bit.ly ...الخ)؟ هل يبدو مشبوهًا؟
-- يجمع كل هذا في **درجة خطورة من 0 إلى 100** ويصنّف الرسالة: Safe / Suspicious / Scam.
-- يحفظ كل رسالة تم تحليلها في قاعدة البيانات (تظهر في صفحة History ولوحة التحكم Dashboard).
+* AI-powered message analysis
+* Scam or Safe classification
+* Arabic language support
+* Saudi dialect support
+* Reporting dashboard
+* User-friendly interface
 
-## التطوير المستقبلي (Level 2 - Machine Learning)
+## Technologies Used
 
-الكود مبني بحيث `IScamAnalyzerService` هي الواجهة المستخدمة في الـ Controllers.
-لاحقًا تقدرين تسوين كلاس جديد مثلاً `MlScamAnalyzerService` يطبق نفس الواجهة لكن
-يستخدم نموذج تصنيف (مثلاً عبر ML.NET) بدل الكلمات المفتاحية فقط، وتستبدلينه في
-Program.cs بسطر واحد:
+* ASP.NET Core
+* C#
+* SQL Server
+* OpenAI API
+* Entity Framework Core
+* HTML, CSS, JavaScript
 
-```csharp
-builder.Services.AddScoped<IScamAnalyzerService, MlScamAnalyzerService>();
-```
+## How It Works
 
-## ملاحظة عن SQL Server
+1. The user submits a message.
+2. The system analyzes the content using AI.
+3. The message is classified as Safe or Scam.
+4. The result and explanation are displayed to the user.
+5. Reports are stored for future analysis.
 
-المشروع حاليًا يستخدم **SQLite** لتسهيل التشغيل المباشر بدون تثبيت أي سيرفر قواعد بيانات.
-إذا احتجتي SQL Server (حسب التصميم الأصلي):
-1. في `ScamShieldAI.csproj` استبدلي `Microsoft.EntityFrameworkCore.Sqlite` بـ `Microsoft.EntityFrameworkCore.SqlServer`.
-2. في `Program.cs` استبدلي `UseSqlite(...)` بـ `UseSqlServer(...)`.
-3. في `appsettings.json` عدّلي `DefaultConnection` لتكون connection string لسيرفرك.
+## Screenshots
+
+### Home Page
+
+(Add screenshot)
+
+### Message Analysis
+
+(Add screenshot)
+
+### Result Page
+
+(Add screenshot)
+
+### Dashboard
+
+(Add screenshot)
+
+## Future Enhancements
+
+* Scam call detection
+* Mobile application
+* Integration with SMS services
+* Advanced threat intelligence features
+
+## Author
+
+Shouq Al-Mutairi
+Cybersecurity Graduate
+CompTIA Security+ | eJPT
